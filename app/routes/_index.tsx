@@ -181,11 +181,11 @@ export default function Homepage() {
             </figure>
             <figure data-reveal>
               <img
-                src={REAL_BLACK_PRODUCT}
-                alt="Black compact handheld vacuum with detailing attachments"
+                src={REAL_CAR_USE}
+                alt="VantaVac Air cleaning debris from a car seat"
                 loading="lazy"
               />
-              <figcaption>BLACK FINISH / COMPACT FORM</figcaption>
+              <figcaption>CAR INTERIOR USE</figcaption>
             </figure>
           </div>
         </section>
@@ -219,8 +219,8 @@ export default function Homepage() {
         <section className="lux-purchase">
           <div className="lux-purchase-image" data-reveal>
             <img
-              src={REAL_PRODUCT_KIT}
-              alt="VantaVac Air cordless vacuum and included detailing attachments"
+              src={REAL_SCALE}
+              alt="VantaVac Air compact size shown next to a smartphone"
               loading="lazy"
             />
           </div>
@@ -320,6 +320,8 @@ function SingleItemPurchaseButton({
 const REAL_PRODUCT_KIT = 'https://cdn.shopify.com/s/files/1/1051/9055/5991/files/vantavac-air-real-kit.jpg?v=1791292040';
 const REAL_FILTER_CARE = 'https://cdn.shopify.com/s/files/1/1051/9055/5991/files/vantavac-air-washable-filter.jpg?v=1791292046';
 const REAL_BLACK_PRODUCT = 'https://cdn.shopify.com/s/files/1/1051/9055/5991/files/vantavac-air-black-product.jpg?v=1791292052';
+const REAL_CAR_USE = 'https://cdn.shopify.com/s/files/1/1051/9055/5991/files/vantavac-air-car-use.jpg?v=1791294104';
+const REAL_SCALE = 'https://cdn.shopify.com/s/files/1/1051/9055/5991/files/vantavac-air-scale.jpg?v=1791294098';
 
 const VANTAVAC_QUERY = `#graphql
   query VantaVac($country: CountryCode, $language: LanguageCode)
