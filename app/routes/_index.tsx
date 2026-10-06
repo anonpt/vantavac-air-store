@@ -9,9 +9,7 @@ export const meta: Route.MetaFunction = () => [
 ];
 
 export async function loader({context}: Route.LoaderArgs) {
-  const {product} = await context.storefront.query(VANTAVAC_QUERY, {
-    variables: {handle: 'lenovo-new-cordless-handheld-car-vacuum-wet-dry-dual-use-wireless-cleaner-high-power-battery-fast-charging-wireless-vacuum-2027'},
-  });
+  const {product} = await context.storefront.query(VANTAVAC_QUERY);
   if (!product) throw new Response('VantaVac Air unavailable', {status: 404});
   return {product};
 }
@@ -75,9 +73,9 @@ export default function Homepage() {
 }
 
 const VANTAVAC_QUERY = `#graphql
-  query VantaVac($handle: String!, $country: CountryCode, $language: LanguageCode)
+  query VantaVac($country: CountryCode, $language: LanguageCode)
   @inContext(country: $country, language: $language) {
-    product(handle: $handle) {
+    product(id: "gid://shopify/Product/11247166390615") {
       id title handle description
       featuredImage {id url altText width height}
       images(first: 7) {nodes {id url altText width height}}
