@@ -235,8 +235,17 @@ export default function Homepage() {
       </main>
 
       <footer className="lux-footer">
-        <a className="lux-brand" href="/">VantaVac <b>AIR</b></a>
-        <p>Precision cleaning for modern life.</p>
+        <div className="lux-footer-brand">
+          <a className="lux-brand" href="/">VantaVac <b>AIR</b></a>
+          <p>Precision cleaning for modern life.</p>
+        </div>
+        <nav className="lux-footer-links" aria-label="Store policies">
+          <a href="/policies/privacy-policy">Privacy</a>
+          <a href="/policies/refund-policy">Returns</a>
+          <a href="/policies/shipping-policy">Shipping</a>
+          <a href="/policies/terms-of-service">Terms</a>
+          <a href="mailto:luisfilipesilva2010@gmail.com">Support</a>
+        </nav>
         <small>© {new Date().getFullYear()} VantaVac</small>
       </footer>
 

@@ -21,17 +21,28 @@ export async function loader({context}: Route.LoaderArgs) {
   return {policies};
 }
 
+const policyLabel: Record<string, string> = {
+  'privacy-policy': 'Privacy Policy',
+  'shipping-policy': 'Shipping Policy',
+  'terms-of-service': 'Terms of Service',
+  'refund-policy': 'Refund & Return Policy',
+  'subscription-policy': 'Subscription Policy',
+};
+
 export default function Policies() {
   const {policies} = useLoaderData<typeof loader>();
 
   return (
     <div className="policies">
-      <h1>Policies</h1>
-      <div>
+      <Link className="policy-back" to="/">← VantaVac Air</Link>
+      <p className="policy-kicker">LEGAL & CUSTOMER CARE</p>
+      <h1>Store Policies</h1>
+      <div className="policy-list">
         {policies.map((policy) => (
-          <fieldset key={policy.id}>
-            <Link to={`/policies/${policy.handle}`}>{policy.title}</Link>
-          </fieldset>
+          <Link key={policy.id} to={`/policies/${policy.handle}`}>
+            <span>{policyLabel[policy.handle] ?? policy.title}</span>
+            <span>→</span>
+          </Link>
         ))}
       </div>
     </div>
