@@ -10,7 +10,7 @@ export const meta: Route.MetaFunction = () => [
 
 export async function loader({context}: Route.LoaderArgs) {
   const {product} = await context.storefront.query(VANTAVAC_QUERY, {
-    variables: {handle: 'vantavac-air-cordless-car-vacuum'},
+    variables: {handle: 'lenovo-new-cordless-handheld-car-vacuum-wet-dry-dual-use-wireless-cleaner-high-power-battery-fast-charging-wireless-vacuum-2027'},
   });
   if (!product) throw new Response('VantaVac Air unavailable', {status: 404});
   return {product};
