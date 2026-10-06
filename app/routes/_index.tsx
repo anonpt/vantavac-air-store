@@ -1,6 +1,6 @@
 import {Await, useLoaderData, useRouteLoaderData} from 'react-router';
 import type {Route} from './+types/_index';
-import {Image, CartForm} from '@shopify/hydrogen';
+import {CartForm} from '@shopify/hydrogen';
 import {Suspense, useEffect, useRef, type ReactNode} from 'react';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import type {RootLoader} from '~/root';
