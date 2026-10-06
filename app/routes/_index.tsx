@@ -1,7 +1,10 @@
-import {useLoaderData} from 'react-router';
+import {Await, useLoaderData, useRouteLoaderData} from 'react-router';
 import type {Route} from './+types/_index';
 import {Image, CartForm} from '@shopify/hydrogen';
-import {useEffect, useRef} from 'react';
+import type {CartApiQueryFragment} from 'storefrontapi.generated';
+import type {RootLoader} from '~/root';
+import {useAside} from '~/components/Aside';
+import {Suspense, useEffect, useRef} from 'react';
 
 export const meta: Route.MetaFunction = () => [
   {title: 'VantaVac Air™ | Precision Cleaning, Refined'},
@@ -20,6 +23,8 @@ export default function Homepage() {
   const money = new Intl.NumberFormat('en-US',{style:'currency',currency:variant.price.currencyCode}).format(Number(variant.price.amount));
   const compare = variant.compareAtPrice ? new Intl.NumberFormat('en-US',{style:'currency',currency:variant.compareAtPrice.currencyCode}).format(Number(variant.compareAtPrice.amount)) : null;
   const root = useRef<HTMLDivElement>(null);
+  const rootData = useRouteLoaderData<RootLoader>('root');
+  const {open} = useAside();
 
   useEffect(() => {
     const el=root.current;if(!el)return;
@@ -32,11 +37,19 @@ export default function Homepage() {
     return()=>{io.disconnect();removeEventListener('scroll',onScroll)};
   },[]);
 
-  const add = (label:string) => <CartForm route="/cart" action={CartForm.ACTIONS.LinesAdd} inputs={{lines:[{merchandiseId:variant.id,quantity:1}]}}><button className="vv-button" type="submit" disabled={!variant.availableForSale}>{variant.availableForSale?label:'Sold out'} <span>↗</span></button></CartForm>;
+  const add = (label:string) => (
+    <SingleItemPurchaseButton
+      cartPromise={rootData?.cart}
+      variantId={variant.id}
+      available={variant.availableForSale}
+      label={label}
+      onOpenCart={() => open('cart')}
+    />
+  );
 
   return <div className="vv" ref={root}>
     <div className="vv-announcement">COMPLIMENTARY U.S. SHIPPING <i/> 120W CORDLESS PRECISION</div>
-    <nav className="vv-nav"><a className="vv-brand" href="#">VANTA<span>VAC</span><sup>®</sup></a><div className="vv-links"><a href="#design">Design</a><a href="#performance">Performance</a><a href="#details">Details</a></div><a className="vv-nav-buy" href="#buy">Acquire — {money}</a></nav>
+    <nav className="vv-nav"><a className="vv-brand" href="#">VANTA<span>VAC</span><sup>®</sup></a><div className="vv-links"><a href="#design">Design</a><a href="#performance">Performance</a><a href="#details">Details</a></div><div className="vv-nav-actions"><a className="vv-nav-buy" href="#buy">Acquire — {money}</a><button className="vv-cart-link" type="button" onClick={() => open('cart')}><span>Bag</span><Suspense fallback={<b>0</b>}><Await resolve={rootData?.cart}>{(cart)=><b>{cart?.totalQuantity ?? 0}</b>}</Await></Suspense></button></div></nav>
 
     <main>
       <section className="vv-hero">
@@ -70,6 +83,56 @@ export default function Homepage() {
     <footer className="vv-footer"><a className="vv-brand" href="#">VANTA<span>VAC</span><sup>®</sup></a><p>Precision cleaning for modern life.</p><small>© {new Date().getFullYear()} VantaVac. All rights reserved.</small></footer>
     <div className="vv-sticky"><div><b>VantaVac Air™</b><span>{money}</span></div>{add('Add to cart')}</div>
   </div>;
+}
+
+function SingleItemPurchaseButton({
+  cartPromise,
+  variantId,
+  available,
+  label,
+  onOpenCart,
+}: {
+  cartPromise?: Promise<CartApiQueryFragment | null>;
+  variantId: string;
+  available: boolean;
+  label: string;
+  onOpenCart: () => void;
+}) {
+  const button = (children: React.ReactNode) => (
+    <button className="vv-button" type="submit" disabled={!available} onClick={onOpenCart}>
+      {available ? children : 'Sold out'} <span>↗</span>
+    </button>
+  );
+
+  if (!cartPromise) {
+    return (
+      <CartForm route="/cart" action={CartForm.ACTIONS.LinesAdd} inputs={{lines:[{merchandiseId: variantId, quantity: 1}]}}>
+        {button(label)}
+      </CartForm>
+    );
+  }
+
+  return (
+    <Suspense fallback={button(label)}>
+      <Await resolve={cartPromise}>
+        {(cart) => {
+          const existing = cart?.lines?.nodes?.find((line) => line.merchandise.id === variantId);
+          if (existing) {
+            return (
+              <CartForm route="/cart" action={CartForm.ACTIONS.LinesUpdate} inputs={{lines:[{id: existing.id, quantity: 1}]}}>
+                {button(label)}
+              </CartForm>
+            );
+          }
+          return (
+            <CartForm route="/cart" action={CartForm.ACTIONS.LinesAdd} inputs={{lines:[{merchandiseId: variantId, quantity: 1}]}}>
+              {button(label)}
+            </CartForm>
+          );
+        }}
+      </Await>
+    </Suspense>
+  );
 }
 
 const VANTAVAC_QUERY = `#graphql
