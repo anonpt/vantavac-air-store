@@ -126,13 +126,12 @@ export default function Homepage() {
 
           <div className="lux-product" data-reveal>
             <div className="lux-product-inner" data-parallax>
-              {product.featuredImage && (
-                <Image
-                  data={product.featuredImage}
-                  sizes="(min-width: 900px) 54vw, 92vw"
-                  loading="eager"
-                />
-              )}
+              <img
+                src={REAL_BLACK_PRODUCT}
+                alt="Black VantaVac Air cordless handheld vacuum"
+                loading="eager"
+                fetchPriority="high"
+              />
             </div>
             <span className="lux-orbit lux-orbit-a" aria-hidden="true" />
             <span className="lux-orbit lux-orbit-b" aria-hidden="true" />
@@ -149,15 +148,19 @@ export default function Homepage() {
 
         <section className="lux-story" id="design">
           <div className="lux-story-copy" data-reveal>
-            <p className="lux-kicker">DESIGNED FOR THE DETAILS</p>
-            <h2>Your car shouldn't need a <span>full-size vacuum.</span></h2>
+            <p className="lux-kicker">SIMPLE TO LIVE WITH</p>
+            <h2>Clean the car. <span>Reset the tool.</span></h2>
             <p>
-              VantaVac Air stays close enough to become a habit. Pick it up,
-              handle the mess, empty the dust container and move on.
+              A removable filter and bagless dust cup keep everyday maintenance
+              straightforward after quick cleanups.
             </p>
           </div>
           <div className="lux-story-image" data-reveal>
-            {product.images.nodes[1] && <Image data={product.images.nodes[1]} sizes="50vw" />}
+            <img
+              src={REAL_FILTER_CARE}
+              alt="Hand rinsing the removable vacuum filter under running water"
+              loading="lazy"
+            />
           </div>
         </section>
 
@@ -169,12 +172,20 @@ export default function Homepage() {
           </div>
           <div className="lux-cinema-grid">
             <figure data-reveal>
-              {product.images.nodes[2] && <Image data={product.images.nodes[2]} sizes="50vw" />}
-              <figcaption>PRECISION ATTACHMENT</figcaption>
+              <img
+                src={REAL_PRODUCT_KIT}
+                alt="Black handheld vacuum with crevice nozzle, brush and charging cable"
+                loading="lazy"
+              />
+              <figcaption>PRODUCT + ATTACHMENTS</figcaption>
             </figure>
             <figure data-reveal>
-              {product.images.nodes[3] && <Image data={product.images.nodes[3]} sizes="50vw" />}
-              <figcaption>PORTABLE FORM</figcaption>
+              <img
+                src={REAL_BLACK_PRODUCT}
+                alt="Black compact handheld vacuum with detailing attachments"
+                loading="lazy"
+              />
+              <figcaption>BLACK FINISH / COMPACT FORM</figcaption>
             </figure>
           </div>
         </section>
@@ -207,9 +218,11 @@ export default function Homepage() {
 
         <section className="lux-purchase">
           <div className="lux-purchase-image" data-reveal>
-            {product.images.nodes[5]
-              ? <Image data={product.images.nodes[5]} sizes="48vw" />
-              : product.featuredImage && <Image data={product.featuredImage} sizes="48vw" />}
+            <img
+              src={REAL_PRODUCT_KIT}
+              alt="VantaVac Air cordless vacuum and included detailing attachments"
+              loading="lazy"
+            />
           </div>
           <div className="lux-purchase-copy" data-reveal>
             <p className="lux-kicker">VANTAVAC AIR™</p>
@@ -303,6 +316,10 @@ function SingleItemPurchaseButton({
     </Suspense>
   );
 }
+
+const REAL_PRODUCT_KIT = 'https://cdn.shopify.com/s/files/1/1051/9055/5991/files/vantavac-air-real-kit.jpg?v=1791292040';
+const REAL_FILTER_CARE = 'https://cdn.shopify.com/s/files/1/1051/9055/5991/files/vantavac-air-washable-filter.jpg?v=1791292046';
+const REAL_BLACK_PRODUCT = 'https://cdn.shopify.com/s/files/1/1051/9055/5991/files/vantavac-air-black-product.jpg?v=1791292052';
 
 const VANTAVAC_QUERY = `#graphql
   query VantaVac($country: CountryCode, $language: LanguageCode)
