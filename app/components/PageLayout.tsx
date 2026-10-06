@@ -1,10 +1,6 @@
 import {Await} from 'react-router';
 import {Suspense} from 'react';
-import type {
-  CartApiQueryFragment,
-  FooterQuery,
-  HeaderQuery,
-} from 'storefrontapi.generated';
+import type {CartApiQueryFragment, FooterQuery, HeaderQuery} from 'storefrontapi.generated';
 import {Aside} from '~/components/Aside';
 import {CartMain} from '~/components/CartMain';
 
@@ -17,17 +13,12 @@ interface PageLayoutProps {
   children?: React.ReactNode;
 }
 
-export function PageLayout({
-  cart,
-  children = null,
-}: PageLayoutProps) {
+export function PageLayout({cart, children = null}: PageLayoutProps) {
   return (
     <Aside.Provider>
-      <Aside type="cart" heading={<span className="vv-cart-heading">VANTAVAC / BAG</span>}>
-        <Suspense fallback={<p className="vv-cart-loading">Loading your bag…</p>}>
-          <Await resolve={cart}>
-            {(cart) => <CartMain cart={cart} layout="aside" />}
-          </Await>
+      <Aside type="cart" heading={<span className="cart-brand">VANTAVAC / BAG</span>}>
+        <Suspense fallback={<p className="cart-loading">Loading bag…</p>}>
+          <Await resolve={cart}>{(resolved) => <CartMain cart={resolved} layout="aside" />}</Await>
         </Suspense>
       </Aside>
       <main>{children}</main>

@@ -1,14 +1,14 @@
 import {Await, useLoaderData, useRouteLoaderData} from 'react-router';
 import type {Route} from './+types/_index';
 import {Image, CartForm} from '@shopify/hydrogen';
+import {Suspense, useEffect, useRef, type ReactNode} from 'react';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import type {RootLoader} from '~/root';
 import {useAside} from '~/components/Aside';
-import {Suspense, useEffect, useRef} from 'react';
 
 export const meta: Route.MetaFunction = () => [
-  {title: 'VantaVac Air™ | Precision Cleaning, Refined'},
-  {name: 'description', content: 'VantaVac Air™ is a compact 120W cordless handheld vacuum for fast, precise everyday detailing.'},
+  {title: 'VantaVac Air™ | Cordless Precision Cleaning'},
+  {name: 'description', content: 'Compact 120W cordless cleaning for car interiors, upholstery and tight spaces.'},
 ];
 
 export async function loader({context}: Route.LoaderArgs) {
@@ -19,25 +19,54 @@ export async function loader({context}: Route.LoaderArgs) {
 
 export default function Homepage() {
   const {product} = useLoaderData<typeof loader>();
-  const variant = product.selectedOrFirstAvailableVariant ?? product.variants.nodes[0];
-  const money = new Intl.NumberFormat('en-US',{style:'currency',currency:variant.price.currencyCode}).format(Number(variant.price.amount));
-  const compare = variant.compareAtPrice ? new Intl.NumberFormat('en-US',{style:'currency',currency:variant.compareAtPrice.currencyCode}).format(Number(variant.compareAtPrice.amount)) : null;
-  const root = useRef<HTMLDivElement>(null);
   const rootData = useRouteLoaderData<RootLoader>('root');
   const {open} = useAside();
+  const root = useRef<HTMLDivElement>(null);
+  const variant = product.selectedOrFirstAvailableVariant ?? product.variants.nodes[0];
+
+  const formatMoney = (amount: string, currencyCode: string) =>
+    new Intl.NumberFormat('en-US', {style: 'currency', currency: currencyCode}).format(Number(amount));
+
+  const price = formatMoney(variant.price.amount, variant.price.currencyCode);
+  const compare = variant.compareAtPrice
+    ? formatMoney(variant.compareAtPrice.amount, variant.compareAtPrice.currencyCode)
+    : null;
 
   useEffect(() => {
-    const el=root.current;if(!el)return;
-    const items=el.querySelectorAll<HTMLElement>('[data-reveal]');
-    const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vv-in');io.unobserve(e.target)}}),{threshold:.12});
-    items.forEach(i=>io.observe(i));
-    const hero=el.querySelector<HTMLElement>('[data-parallax]');
-    const onScroll=()=>{if(hero) hero.style.transform=`translate3d(0,${Math.min(28,scrollY*.035)}px,0)`};
-    if(!matchMedia('(prefers-reduced-motion: reduce)').matches)addEventListener('scroll',onScroll,{passive:true});
-    return()=>{io.disconnect();removeEventListener('scroll',onScroll)};
-  },[]);
+    const el = root.current;
+    if (!el) return;
 
-  const add = (label:string) => (
+    const reveals = el.querySelectorAll<HTMLElement>('[data-reveal]');
+    const observer = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        }),
+      {threshold: 0.12},
+    );
+
+    reveals.forEach((item) => observer.observe(item));
+
+    const visual = el.querySelector<HTMLElement>('[data-parallax]');
+    const onScroll = () => {
+      if (!visual) return;
+      visual.style.transform = `translate3d(0,${Math.min(34, window.scrollY * 0.028)}px,0)`;
+    };
+
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      window.addEventListener('scroll', onScroll, {passive: true});
+    }
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, []);
+
+  const buyButton = (label: string) => (
     <SingleItemPurchaseButton
       cartPromise={rootData?.cart}
       variantId={variant.id}
@@ -47,42 +76,185 @@ export default function Homepage() {
     />
   );
 
-  return <div className="vv" ref={root}>
-    <div className="vv-announcement">COMPLIMENTARY U.S. SHIPPING <i/> 120W CORDLESS PRECISION</div>
-    <nav className="vv-nav"><a className="vv-brand" href="#">VANTA<span>VAC</span><sup>®</sup></a><div className="vv-links"><a href="#design">Design</a><a href="#performance">Performance</a><a href="#details">Details</a></div><div className="vv-nav-actions"><a className="vv-nav-buy" href="#buy">Acquire — {money}</a><button className="vv-cart-link" type="button" onClick={() => open('cart')}><span>Bag</span><Suspense fallback={<b>0</b>}><Await resolve={rootData?.cart}>{(cart)=><b>{cart?.totalQuantity ?? 0}</b>}</Await></Suspense></button></div></nav>
+  return (
+    <div className="lux" ref={root}>
+      <div className="lux-announcement">U.S. DELIVERY <i /> CORDLESS <i /> 120W RATED POWER</div>
 
-    <main>
-      <section className="vv-hero">
-        <div className="vv-hero-copy" data-reveal>
-          <p className="vv-overline">VANTAVAC AIR™ / 01</p>
-          <h1>Precision.<br/><em>Without</em><br/>the bulk.</h1>
-          <p className="vv-lead">A compact cordless instrument designed for the details your full-size vacuum was never made to reach.</p>
-          <div className="vv-price"><strong>{money}</strong>{compare&&<s>{compare}</s>}<span>USD</span></div>
-          <div className="vv-actions">{add('Add to cart')}<a href="#design">Discover the design ↓</a></div>
-        </div>
-        <div className="vv-hero-media" data-reveal><div className="vv-orbit"/><div className="vv-product" data-parallax>{product.featuredImage&&<Image data={product.featuredImage} sizes="(min-width: 900px) 58vw, 100vw" loading="eager"/>}</div><span className="vv-media-note">ENGINEERED FOR THE EVERYDAY</span></div>
-      </section>
+      <header className="lux-header">
+        <a className="lux-brand" href="/" aria-label="VantaVac Air home">
+          VantaVac <b>AIR</b>
+        </a>
+        <nav className="lux-nav" aria-label="Main navigation">
+          <a href="#why">Why VantaVac</a>
+          <a href="#design">Design</a>
+          <a href="#included">What's included</a>
+          <a href="#faq">FAQ</a>
+        </nav>
+        <button className="lux-bag" type="button" onClick={() => open('cart')}>
+          Bag <BagCount cartPromise={rootData?.cart} />
+        </button>
+      </header>
 
-      <section className="vv-manifesto" id="design"><div data-reveal><p className="vv-overline">THE OBJECT</p><h2>Less appliance.<br/>More <em>instrument.</em></h2></div><p className="vv-manifesto-copy" data-reveal>Designed to live within reach, VantaVac Air turns the small cleanups you postpone into a ten-second reflex. No cable. No oversized machine. No ceremony.</p></section>
+      <main>
+        <section className="lux-hero">
+          <div className="lux-glow" aria-hidden="true" />
+          <div className="lux-copy" data-reveal>
+            <p className="lux-kicker">PRECISION CLEANING · CORDLESS FREEDOM</p>
+            <h1>POWERFUL<br/>CLEANING.<br/><span>ANYWHERE.</span></h1>
+            <p className="lux-sub">
+              Compact cordless power for the crumbs, dust, hair and tight spaces
+              that make a full-size vacuum feel excessive.
+            </p>
 
-      <section className="vv-gallery">
-        <figure className="vv-gallery-main" data-reveal>{product.images.nodes[1]&&<Image data={product.images.nodes[1]} sizes="70vw"/>}<figcaption>01 — FORM</figcaption></figure>
-        <div className="vv-gallery-side"><figure data-reveal>{product.images.nodes[2]&&<Image data={product.images.nodes[2]} sizes="35vw"/>}<figcaption>02 — DETAIL</figcaption></figure><figure data-reveal>{product.images.nodes[3]&&<Image data={product.images.nodes[3]} sizes="35vw"/>}<figcaption>03 — ACCESS</figcaption></figure></div>
-      </section>
+            <div className="lux-price">
+              <strong>{price}</strong>
+              {compare && <s>{compare}</s>}
+              <small>USD</small>
+            </div>
 
-      <section className="vv-dark" id="performance"><div className="vv-dark-head" data-reveal><p className="vv-overline">PERFORMANCE / CONTROL</p><h2>Small footprint.<br/><em>Serious intent.</em></h2></div><div className="vv-metrics"><div data-reveal><strong>120<span>W</span></strong><p>Rated power</p></div><div data-reveal><strong>5<span>V</span></strong><p>Low-voltage charging</p></div><div data-reveal><strong>USB<span>‑C</span></strong><p>Convenient recharge</p></div><div data-reveal><strong>0<span>CABLES</span></strong><p>Cordless freedom</p></div></div></section>
+            <div className="lux-actions">
+              {buyButton('GET VANTAVAC AIR')}
+              <a href="#design">SEE IT IN DETAIL <span>↓</span></a>
+            </div>
 
-      <section className="vv-detail" id="details"><div className="vv-detail-media" data-reveal>{product.images.nodes[4]&&<Image data={product.images.nodes[4]} sizes="50vw"/>}</div><div className="vv-detail-copy" data-reveal><p className="vv-overline">BUILT FOR THE GAPS</p><h2>Go where the mess <em>actually lives.</em></h2><p>Seat seams. Console edges. Floor mats. Upholstery. Desks. Tight corners. VantaVac Air keeps focused cleaning close at hand.</p><ul><li><span>01</span>Compact handheld format</li><li><span>02</span>Bagless dust collection</li><li><span>03</span>USB Type‑C charging</li><li><span>04</span>Durable ABS body</li></ul></div></section>
+            <div className="lux-mini-proof">
+              <span>USB-C charging</span>
+              <span>Bagless design</span>
+              <span>Black finish</span>
+            </div>
+          </div>
 
-      <section className="vv-use"><p className="vv-overline" data-reveal>ONE TOOL / MANY MOMENTS</p><div className="vv-use-grid"><article data-reveal><span>CAR</span><h3>Between the seats.</h3><p>Crumbs, dust and dry debris where larger tools become awkward.</p></article><article data-reveal><span>HOME</span><h3>Between the cleanups.</h3><p>Quick work on drawers, upholstery, shelves and everyday surfaces.</p></article><article data-reveal><span>DESK</span><h3>Between the keys.</h3><p>A compact format for workspaces and the details around your setup.</p></article></div></section>
+          <div className="lux-product" data-reveal>
+            <div className="lux-product-inner" data-parallax>
+              {product.featuredImage && (
+                <Image
+                  data={product.featuredImage}
+                  sizes="(min-width: 900px) 54vw, 92vw"
+                  loading="eager"
+                />
+              )}
+            </div>
+            <span className="lux-orbit lux-orbit-a" aria-hidden="true" />
+            <span className="lux-orbit lux-orbit-b" aria-hidden="true" />
+            <span className="lux-serial">VVA-120 / BLACK / USB-C</span>
+          </div>
+        </section>
 
-      <section className="vv-buy" id="buy"><div className="vv-buy-product" data-reveal>{product.images.nodes[5]?<Image data={product.images.nodes[5]} sizes="45vw"/>:product.featuredImage&&<Image data={product.featuredImage} sizes="45vw"/>}</div><div className="vv-buy-copy" data-reveal><p className="vv-overline">VANTAVAC AIR™</p><h2>Clean car.<br/>Clear mind.</h2><p>Precision cleaning, stripped back to what matters.</p><div className="vv-price vv-price-light"><strong>{money}</strong>{compare&&<s>{compare}</s>}<span>USD</span></div>{add('Get VantaVac Air™')}<small>Complimentary standard U.S. shipping</small></div></section>
+        <section className="lux-proof" id="why">
+          <article><span>01</span><strong>CORDLESS</strong><small>No cable. No setup ritual.</small></article>
+          <article><span>02</span><strong>COMPACT</strong><small>Made for car interiors.</small></article>
+          <article><span>03</span><strong>120W</strong><small>Rated power for quick cleanups.</small></article>
+          <article><span>04</span><strong>USB-C</strong><small>Convenient recharging.</small></article>
+        </section>
 
-      <section className="vv-faq"><p className="vv-overline">ESSENTIAL INFORMATION</p><h2>Before it becomes yours.</h2><div><details><summary>What is VantaVac Air designed for?<b>+</b></summary><p>Fast pickup of light, dry everyday debris in car interiors, upholstery, desks and tight spaces.</p></details><details><summary>How does it charge?<b>+</b></summary><p>The current model uses USB Type‑C charging.</p></details><details><summary>Is it cordless?<b>+</b></summary><p>Yes. VantaVac Air is a rechargeable cordless handheld vacuum.</p></details><details><summary>What finish is available?<b>+</b></summary><p>The current configuration is offered in black.</p></details></div></section>
-    </main>
-    <footer className="vv-footer"><a className="vv-brand" href="#">VANTA<span>VAC</span><sup>®</sup></a><p>Precision cleaning for modern life.</p><small>© {new Date().getFullYear()} VantaVac. All rights reserved.</small></footer>
-    <div className="vv-sticky"><div><b>VantaVac Air™</b><span>{money}</span></div>{add('Add to cart')}</div>
-  </div>;
+        <section className="lux-story" id="design">
+          <div className="lux-story-copy" data-reveal>
+            <p className="lux-kicker">DESIGNED FOR THE DETAILS</p>
+            <h2>Your car shouldn't need a <span>full-size vacuum.</span></h2>
+            <p>
+              VantaVac Air stays close enough to become a habit. Pick it up,
+              handle the mess, empty the dust container and move on.
+            </p>
+          </div>
+          <div className="lux-story-image" data-reveal>
+            {product.images.nodes[1] && <Image data={product.images.nodes[1]} sizes="50vw" />}
+          </div>
+        </section>
+
+        <section className="lux-cinema">
+          <div className="lux-cinema-copy" data-reveal>
+            <p className="lux-kicker">LESS SETUP. MORE CLEAN.</p>
+            <h2>Built to disappear into your routine.</h2>
+            <p>Seats. Consoles. Floor mats. Sofas. Desks. Corners.</p>
+          </div>
+          <div className="lux-cinema-grid">
+            <figure data-reveal>
+              {product.images.nodes[2] && <Image data={product.images.nodes[2]} sizes="50vw" />}
+              <figcaption>PRECISION ATTACHMENT</figcaption>
+            </figure>
+            <figure data-reveal>
+              {product.images.nodes[3] && <Image data={product.images.nodes[3]} sizes="50vw" />}
+              <figcaption>PORTABLE FORM</figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <section className="lux-specs">
+          <div className="lux-specs-head" data-reveal>
+            <p className="lux-kicker">ESSENTIAL ENGINEERING</p>
+            <h2>Nothing loud.<br/>Everything useful.</h2>
+          </div>
+          <div className="lux-spec-list" data-reveal>
+            <div><span>Rated power</span><b>120W</b></div>
+            <div><span>Voltage</span><b>5V</b></div>
+            <div><span>Charging</span><b>USB Type-C</b></div>
+            <div><span>Dust system</span><b>Bagless</b></div>
+            <div><span>Body</span><b>ABS</b></div>
+            <div><span>Finish</span><b>Black</b></div>
+          </div>
+        </section>
+
+        <section className="lux-included" id="included">
+          <p className="lux-kicker" data-reveal>IN THE BOX</p>
+          <h2 data-reveal>Ready for every corner.</h2>
+          <div className="lux-grid">
+            <article data-reveal><span>01</span><h3>VantaVac Air</h3><p>Compact cordless handheld vacuum.</p></article>
+            <article data-reveal><span>02</span><h3>Narrow nozzle</h3><p>For gaps, seams and hard-to-reach areas.</p></article>
+            <article data-reveal><span>03</span><h3>Detail attachment</h3><p>For focused everyday cleaning.</p></article>
+            <article data-reveal><span>04</span><h3>USB-C charging</h3><p>Simple charging without a bulky dock.</p></article>
+          </div>
+        </section>
+
+        <section className="lux-purchase">
+          <div className="lux-purchase-image" data-reveal>
+            {product.images.nodes[5]
+              ? <Image data={product.images.nodes[5]} sizes="48vw" />
+              : product.featuredImage && <Image data={product.featuredImage} sizes="48vw" />}
+          </div>
+          <div className="lux-purchase-copy" data-reveal>
+            <p className="lux-kicker">VANTAVAC AIR™</p>
+            <h2>A cleaner car is one click away.</h2>
+            <p>Compact. Cordless. Ready when the mess happens.</p>
+            <div className="lux-price">
+              <strong>{price}</strong>
+              {compare && <s>{compare}</s>}
+            </div>
+            {buyButton('ADD TO BAG')}
+            <small>Secure Shopify checkout</small>
+          </div>
+        </section>
+
+        <section className="lux-faq" id="faq">
+          <p className="lux-kicker">QUESTIONS, ANSWERED</p>
+          <h2>FAQ</h2>
+          <details><summary>What is VantaVac Air designed to clean?<span>+</span></summary><p>Light dry debris such as crumbs, dust and hair in car interiors, upholstery, desks and tight spaces.</p></details>
+          <details><summary>How does it charge?<span>+</span></summary><p>The current model uses USB Type-C charging.</p></details>
+          <details><summary>Is it cordless?<span>+</span></summary><p>Yes. It is a rechargeable cordless handheld vacuum.</p></details>
+          <details><summary>What color is available?<span>+</span></summary><p>The current product configuration is black.</p></details>
+        </section>
+      </main>
+
+      <footer className="lux-footer">
+        <a className="lux-brand" href="/">VantaVac <b>AIR</b></a>
+        <p>Precision cleaning for modern life.</p>
+        <small>© {new Date().getFullYear()} VantaVac</small>
+      </footer>
+
+      <div className="lux-sticky">
+        <div><b>VantaVac Air™</b><span>{price}</span></div>
+        {buyButton('ADD TO BAG')}
+      </div>
+    </div>
+  );
+}
+
+function BagCount({cartPromise}: {cartPromise?: Promise<CartApiQueryFragment | null>}) {
+  if (!cartPromise) return <span>0</span>;
+  return (
+    <Suspense fallback={<span>0</span>}>
+      <Await resolve={cartPromise}>{(cart) => <span>{cart?.totalQuantity ?? 0}</span>}</Await>
+    </Suspense>
+  );
 }
 
 function SingleItemPurchaseButton({
@@ -98,15 +270,15 @@ function SingleItemPurchaseButton({
   label: string;
   onOpenCart: () => void;
 }) {
-  const button = (children: React.ReactNode) => (
-    <button className="vv-button" type="submit" disabled={!available} onClick={onOpenCart}>
-      {available ? children : 'Sold out'} <span>↗</span>
+  const button = (children: ReactNode) => (
+    <button className="lux-btn" type="submit" disabled={!available} onClick={onOpenCart}>
+      <span>{available ? children : 'SOLD OUT'}</span><span>→</span>
     </button>
   );
 
   if (!cartPromise) {
     return (
-      <CartForm route="/cart" action={CartForm.ACTIONS.LinesAdd} inputs={{lines:[{merchandiseId: variantId, quantity: 1}]}}>
+      <CartForm route="/cart" action={CartForm.ACTIONS.LinesAdd} inputs={{lines: [{merchandiseId: variantId, quantity: 1}]}}>
         {button(label)}
       </CartForm>
     );
@@ -117,15 +289,12 @@ function SingleItemPurchaseButton({
       <Await resolve={cartPromise}>
         {(cart) => {
           const existing = cart?.lines?.nodes?.find((line) => line.merchandise.id === variantId);
-          if (existing) {
-            return (
-              <CartForm route="/cart" action={CartForm.ACTIONS.LinesUpdate} inputs={{lines:[{id: existing.id, quantity: 1}]}}>
-                {button(label)}
-              </CartForm>
-            );
-          }
-          return (
-            <CartForm route="/cart" action={CartForm.ACTIONS.LinesAdd} inputs={{lines:[{merchandiseId: variantId, quantity: 1}]}}>
+          return existing ? (
+            <CartForm route="/cart" action={CartForm.ACTIONS.LinesUpdate} inputs={{lines: [{id: existing.id, quantity: 1}]}}>
+              {button(label)}
+            </CartForm>
+          ) : (
+            <CartForm route="/cart" action={CartForm.ACTIONS.LinesAdd} inputs={{lines: [{merchandiseId: variantId, quantity: 1}]}}>
               {button(label)}
             </CartForm>
           );
@@ -139,14 +308,24 @@ const VANTAVAC_QUERY = `#graphql
   query VantaVac($country: CountryCode, $language: LanguageCode)
   @inContext(country: $country, language: $language) {
     product(id: "gid://shopify/Product/11247166390615") {
-      id title handle description
-      featuredImage {id url altText width height}
-      images(first: 7) {nodes {id url altText width height}}
+      id
+      title
+      handle
+      featuredImage { id url altText width height }
+      images(first: 7) { nodes { id url altText width height } }
       selectedOrFirstAvailableVariant {
-        id availableForSale
-        price {amount currencyCode}
-        compareAtPrice {amount currencyCode}
+        id
+        availableForSale
+        price { amount currencyCode }
+        compareAtPrice { amount currencyCode }
       }
-      variants(first: 1) {nodes {id availableForSale price {amount currencyCode} compareAtPrice {amount currencyCode}}}
+      variants(first: 1) {
+        nodes {
+          id
+          availableForSale
+          price { amount currencyCode }
+          compareAtPrice { amount currencyCode }
+        }
+      }
     }
   }` as const;
