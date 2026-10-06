@@ -126,9 +126,9 @@ export default function Homepage() {
 
           <div className="lux-product" data-reveal>
             <div className="lux-product-inner" data-parallax>
-              {product.featuredImage && (
+              {(variant.image ?? product.featuredImage) && (
                 <Image
-                  data={product.featuredImage}
+                  data={variant.image ?? product.featuredImage!}
                   sizes="(min-width: 900px) 54vw, 92vw"
                   loading="eager"
                 />
@@ -325,6 +325,7 @@ const VANTAVAC_QUERY = `#graphql
       selectedOrFirstAvailableVariant {
         id
         availableForSale
+        image { id url altText width height }
         price { amount currencyCode }
         compareAtPrice { amount currencyCode }
       }
@@ -332,6 +333,7 @@ const VANTAVAC_QUERY = `#graphql
         nodes {
           id
           availableForSale
+          image { id url altText width height }
           price { amount currencyCode }
           compareAtPrice { amount currencyCode }
         }
